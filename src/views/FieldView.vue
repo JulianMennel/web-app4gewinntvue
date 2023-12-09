@@ -15,7 +15,7 @@ export default {
             playerTurn: true,
             das: this,
             undoStack: [],
-            kupferoStack: [],
+            redoStack: [],
             playground:[
             "", "", "", "", "", "", "",
             "", "", "", "", "", "", "",
@@ -29,6 +29,7 @@ export default {
         setStone(event) {
             if (!this.socketActive) {
                 switch(this.playground[parseInt(event)-1]) {
+                    case "coin flip silver":
                     case "silber":
                         if (parseInt(event) < 36 && this.playground[parseInt(event)+6] != "silber" || parseInt(event) >= 36) {
                             this.playground[parseInt(event)-1] = this.playerTurn ? "golden" : "kupfer";
@@ -44,7 +45,8 @@ export default {
                 }
             } else {
                 switch(this.playground[parseInt(event)-1]) {
-                    case "silber":
+                    case "coin flip silver":
+                    case "silber": {
                         if (parseInt(event) < 36 && this.playground[parseInt(event)+6] != "silber" || parseInt(event) >= 36) {
                             var col = (parseInt(event) % 7) - 1;
                             var row2 = (parseInt(event) - (col + 1)) / 7;
@@ -66,6 +68,7 @@ export default {
                             alert("Stein kann hier nicht gesetzt werden!");
                         }
                         break;
+                    }
                     default:
                         alert("Stein wurde bereits gesetzt!");
                         break;
@@ -120,21 +123,21 @@ export default {
                 "silber", "silber", "silber", "silber", "silber", "silber", "silber"
                 ];
             this.undoStack = [];
-            this.kupferoStack = [];
+            this.redoStack = [];
             this.playerTurn = true;
             if (this.socketActive){
                 axios.get('http://localhost:9000/newGame');
             }
         },
         undoStep() {
-            this.kupferoStack.push([this.undoStack[this.undoStack.length - 1], this.playground[this.undoStack[this.undoStack.length - 1] - 1]]);
+            this.redoStack.push([this.undoStack[this.undoStack.length - 1], this.playground[this.undoStack[this.undoStack.length - 1] - 1]]);
             this.playground[this.undoStack[this.undoStack.length - 1] - 1] = "silber";
             this.undoStack.pop();
             this.playerTurn = !this.playerTurn;
         },
-        kupferoStep() {
-            this.playground[this.kupferoStack[this.kupferoStack.length - 1][0] - 1] = this.kupferoStack[this.kupferoStack.length - 1][1];
-            this.kupferoStack.pop();
+        redoStep() {
+            this.playground[this.redoStack[this.redoStack.length - 1][0] - 1] = this.redoStack[this.redoStack.length - 1][1];
+            this.redoStack.pop();
             this.playerTurn = !this.playerTurn;
         },
         startWebSocket() {
@@ -159,6 +162,32 @@ export default {
         updateField(nr, color) {
             this.playground[nr] = color;
         },
+        coinRotate(event) {
+            switch(this.playground[event-1]) {
+                case 'silber':
+                    this.playground[event-1] = "coin flip silver";
+                    break;
+                case 'golden':
+                    this.playground[event-1] = "coin";
+                    break;
+                case 'kupfer':
+                    this.playground[event-1] = "coin copper";
+                    break;
+            }
+        },
+        coinStatic(event) {
+            switch(this.playground[event-1]) {
+                case "coin flip silver":
+                    this.playground[event-1] = 'silber';
+                    break;
+                case "coin":
+                    this.playground[event-1] = 'golden';
+                    break;
+                case "coin copper":
+                    this.playground[event-1] = 'kupfer';
+                    break;
+            }
+        }
     },
     created() {
         this.newGame();
@@ -168,14 +197,14 @@ export default {
 </script>
 
 <template>
-    <Navbar @saveField="saveGame" @loadField="loadGame" @newField="newGame" @undoStep="undoStep" @kupferoStep="kupferoStep"></Navbar>
+    <Navbar @saveField="saveGame" @loadField="loadGame" @newField="newGame" @undoStep="undoStep" @redoStep="redoStep"></Navbar>
     <div style="margin-left: 10px;">
     <h1>4-Gewinnt</h1>
     <p>
         Ein neues Spiel wurde erzeugt!
     </p>
         <div class="grid" id="grid">
-            <Field :field="this.playground" @stoneSet="setStone"></Field>
+            <Field :field="this.playground" @stoneSet="setStone" @rotateCoin="coinRotate" @staticCoin="coinStatic"></Field>
         </div>
     </div>
 </template>

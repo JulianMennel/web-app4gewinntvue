@@ -21,7 +21,7 @@ export default {
 </script>
 
 <template>
-    <div :class="color" :id="id" @click="$emit('stoneSet',id)" style="cursor: pointer;"></div>
+    <div :class="color" :id="id" @click="$emit('stoneSet',id)" style="cursor: pointer;" @mouseenter="$emit('rotateCoin',id)" @mouseleave="$emit('staticCoin',id)"></div>
 </template>
 
 <style scoped>
