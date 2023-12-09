@@ -15,7 +15,7 @@ export default {
             playerTurn: true,
             das: this,
             undoStack: [],
-            redoStack: [],
+            kupferoStack: [],
             playground:[
             "", "", "", "", "", "", "",
             "", "", "", "", "", "", "",
@@ -29,9 +29,9 @@ export default {
         setStone(event) {
             if (!this.socketActive) {
                 switch(this.playground[parseInt(event)-1]) {
-                    case "empty":
-                        if (parseInt(event) < 36 && this.playground[parseInt(event)+6] != "empty" || parseInt(event) >= 36) {
-                            this.playground[parseInt(event)-1] = this.playerTurn ? "yellow" : "red";
+                    case "silber":
+                        if (parseInt(event) < 36 && this.playground[parseInt(event)+6] != "silber" || parseInt(event) >= 36) {
+                            this.playground[parseInt(event)-1] = this.playerTurn ? "golden" : "kupfer";
                             this.playerTurn = !this.playerTurn;
                             this.undoStack.push(event);
                         } else {
@@ -44,8 +44,8 @@ export default {
                 }
             } else {
                 switch(this.playground[parseInt(event)-1]) {
-                    case "empty":
-                        if (parseInt(event) < 36 && this.playground[parseInt(event)+6] != "empty" || parseInt(event) >= 36) {
+                    case "silber":
+                        if (parseInt(event) < 36 && this.playground[parseInt(event)+6] != "silber" || parseInt(event) >= 36) {
                             var col = (parseInt(event) % 7) - 1;
                             var row2 = (parseInt(event) - (col + 1)) / 7;
                             if (col == -1) {
@@ -82,13 +82,13 @@ export default {
                     for(var i = 0; i < data.field.cells.length; i++) {
                         switch (data.field.cells[i].value) {
                             case 'X':
-                                this.playground[i] = "yellow";
+                                this.playground[i] = "golden";
                                 break;
                             case 'O':
-                                this.playground[i] = "red";
+                                this.playground[i] = "kupfer";
                                 break;
                             case ' ':
-                                this.playground[i] = "empty";
+                                this.playground[i] = "silber";
                                 break;
                         }
                     }
@@ -112,29 +112,29 @@ export default {
         },
         newGame() {
             this.playground = [
-                "empty", "empty", "empty", "empty", "empty", "empty", "empty",
-                "empty", "empty", "empty", "empty", "empty", "empty", "empty",
-                "empty", "empty", "empty", "empty", "empty", "empty", "empty",
-                "empty", "empty", "empty", "empty", "empty", "empty", "empty",
-                "empty", "empty", "empty", "empty", "empty", "empty", "empty",
-                "empty", "empty", "empty", "empty", "empty", "empty", "empty"
+                "silber", "silber", "silber", "silber", "silber", "silber", "silber",
+                "silber", "silber", "silber", "silber", "silber", "silber", "silber",
+                "silber", "silber", "silber", "silber", "silber", "silber", "silber",
+                "silber", "silber", "silber", "silber", "silber", "silber", "silber",
+                "silber", "silber", "silber", "silber", "silber", "silber", "silber",
+                "silber", "silber", "silber", "silber", "silber", "silber", "silber"
                 ];
             this.undoStack = [];
-            this.redoStack = [];
+            this.kupferoStack = [];
             this.playerTurn = true;
             if (this.socketActive){
                 axios.get('http://localhost:9000/newGame');
             }
         },
         undoStep() {
-            this.redoStack.push([this.undoStack[this.undoStack.length - 1], this.playground[this.undoStack[this.undoStack.length - 1] - 1]]);
-            this.playground[this.undoStack[this.undoStack.length - 1] - 1] = "empty";
+            this.kupferoStack.push([this.undoStack[this.undoStack.length - 1], this.playground[this.undoStack[this.undoStack.length - 1] - 1]]);
+            this.playground[this.undoStack[this.undoStack.length - 1] - 1] = "silber";
             this.undoStack.pop();
             this.playerTurn = !this.playerTurn;
         },
-        redoStep() {
-            this.playground[this.redoStack[this.redoStack.length - 1][0] - 1] = this.redoStack[this.redoStack.length - 1][1];
-            this.redoStack.pop();
+        kupferoStep() {
+            this.playground[this.kupferoStack[this.kupferoStack.length - 1][0] - 1] = this.kupferoStack[this.kupferoStack.length - 1][1];
+            this.kupferoStack.pop();
             this.playerTurn = !this.playerTurn;
         },
         startWebSocket() {
@@ -168,7 +168,7 @@ export default {
 </script>
 
 <template>
-    <Navbar @saveField="saveGame" @loadField="loadGame" @newField="newGame" @undoStep="undoStep" @redoStep="redoStep"></Navbar>
+    <Navbar @saveField="saveGame" @loadField="loadGame" @newField="newGame" @undoStep="undoStep" @kupferoStep="kupferoStep"></Navbar>
     <div style="margin-left: 10px;">
     <h1>4-Gewinnt</h1>
     <p>
