@@ -122,7 +122,9 @@ export default {
             this.undoStack = [];
             this.redoStack = [];
             this.playerTurn = true;
-            axios.get('http://localhost:9000/newGame');
+            if (this.socketActive){
+                axios.get('http://localhost:9000/newGame');
+            }
         },
         undoStep() {
             this.redoStack.push([this.undoStack[this.undoStack.length - 1], this.playground[this.undoStack[this.undoStack.length - 1] - 1]]);
@@ -144,20 +146,7 @@ export default {
                 console.log("WS open");
             };
             this.socketRef.onmessage = function (event) {
-                const obj = JSON.parse(event.data);
-                for (var i=0; i<obj.field.cells.length; i++) {
-                    switch (obj.field.cells[i].value) {
-                        case 'X':
-                            playgraoundField[i] = "yellow";
-                            break;
-                        case 'O':
-                            playgraoundField[i] = "red";
-                            break;
-                        case ' ':
-                            playgraoundField[i] = "empty";
-                            break;
-                    }
-                }
+                view.fetchFromAPI();
             };
             this.socketRef.onerror = function (error) {
                 console.log("WS Error" + error);
