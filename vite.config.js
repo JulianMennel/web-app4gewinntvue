@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         icons: [
           {
-            src: "img/vue2.png",
+            src: "img/connectFour.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any maskable",
